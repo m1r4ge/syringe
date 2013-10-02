@@ -60,7 +60,7 @@ void print_progress(double progress, void* data) {
 
 void usage()
 {
-	printf("Usage: tetheredboot -i <ibss> -k <kernelcache> [-r <ramdisk>] [-b <bgcolor>] [-l <bootlogo.img3>]\n");
+	printf("Usage: tetheredboot -s <ibss> -e <ibec> -k <kernelcache> [-r <ramdisk>] [-b <bgcolor>] [-l <bootlogo.img3>]\n");
 	exit(0);
 }
 
@@ -73,6 +73,7 @@ int main(int argc, char* argv[]) {
 	//int index;
 	const char 
 		*ibssFile = NULL,
+		*ibecFile = NULL,
 		*kernelcacheFile = NULL,
 		*ramdiskFile = NULL,
 		*bgcolor = NULL,
@@ -81,7 +82,7 @@ int main(int argc, char* argv[]) {
 
 	opterr = 0;
 
-	while ((c = getopt (argc, argv, "vhi:k:r:l:b:")) != -1)
+	while ((c = getopt (argc, argv, "vhs:e:k:r:l:b:")) != -1)
 		switch (c)
 	{
 		case 'v':
@@ -90,12 +91,19 @@ int main(int argc, char* argv[]) {
 		case 'h':
 			usage();
 			break;
-		case 'i':
+		case 's':
 			if (!file_exists(optarg)) {
 				error("Cannot open iBSS file '%s'\n", optarg);
 				return -1;
 			}
 			ibssFile = optarg;
+			break;
+		case 'e':
+			if (!file_exists(optarg)) {
+				error("Cannot open iBEC file '%s'\n", optarg);
+				return -1;
+			}
+			ibecFile = optarg;
 			break;
 		case 'k':
 			if (!file_exists(optarg)) {
@@ -158,6 +166,18 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
+	if (ibecFile != NULL) {
+		client = irecv_reconnect(client, 10);
+
+		debug("Uploading %s to device\n", ibecFile);
+		ir_error = irecv_send_file(client, ibecFile, 1);
+		if (ir_error != IRECV_E_SUCCESS) {
+			error("Unable to upload iBEC\n");
+			debug("%s\n", irecv_strerror(ir_error));
+			return -1;
+		}
+	}
+
 	client = irecv_reconnect(client, 10);
 
 	if (ramdiskFile != NULL) {
@@ -193,11 +213,11 @@ int main(int argc, char* argv[]) {
 			return -1;
 		}
 
-                ir_error = irecv_send_command(client, "bgcolor 0 0 0");
+        ir_error = irecv_send_command(client, "bgcolor 0 0 0");
 		if(ir_error != IRECV_E_SUCCESS) {
 			error("Unable to set picture\n");
-                        return -1;
-                }
+			return -1;
+        }
 	}
 
 	if (bgcolor != NULL) {

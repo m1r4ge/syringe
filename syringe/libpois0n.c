@@ -67,50 +67,56 @@ int send_command(char* command) {
 	return ret;
 }
 
-int fetch_image(const char* path, const char* output) {
-	debug("Fetching %s...\n", path);
-	if (download_file_from_zip(device->url, path, output, &download_callback)
-			!= 0) {
-		error("Unable to fetch %s\n", path);
-		return -1;
-	}
+int fetch_image(const char* path, const char* output) {	
+	error("Fetching not supported\n");
+	return -1;
+	// debug("Fetching %s...\n", path);
+	// if (download_file_from_zip(device->url, path, output, &download_callback)
+	// 		!= 0) {
+	// 	error("Unable to fetch %s\n", path);
+	// 	return -1;
+	// }
 
-	return 0;
+	// return 0;
 }
 
 int fetch_dfu_image(const char* type, const char* output) {
-	char name[64];
-	char path[255];
+	error("Fetching not supported\n");
+	return -1;
+	// char name[64];
+	// char path[255];
 
-	memset(name, '\0', 64);
-	memset(path, '\0', 255);
-	snprintf(name, 63, "%s.%s.RELEASE.dfu", type, device->model);
-	snprintf(path, 254, "Firmware/dfu/%s", name);
+	// memset(name, '\0', 64);
+	// memset(path, '\0', 255);
+	// snprintf(name, 63, "%s.%s.RELEASE.dfu", type, device->model);
+	// snprintf(path, 254, "Firmware/dfu/%s", name);
 
-	debug("Preparing to fetch DFU image from Apple's servers\n");
-	if (fetch_image(path, output) < 0) {
-		error("Unable to fetch DFU image from Apple's servers\n");
-		return -1;
-	}
+	// debug("Preparing to fetch DFU image from Apple's servers\n");
+	// if (fetch_image(path, output) < 0) {
+	// 	error("Unable to fetch DFU image from Apple's servers\n");
+	// 	return -1;
+	// }
 
-	return 0;
+	// return 0;
 }
 
 int fetch_firmware_image(const char* type, const char* output) {
-	char name[64];
-	char path[255];
+	error("Fetching not supported\n");
+	return -1;
+	// char name[64];
+	// char path[255];
 
-	memset(name, '\0', 64);
-	memset(path, '\0', 255);
-	snprintf(name, 63, "%s.%s.img3", type, device->model);
-	snprintf(path, 254, "Firmware/all_flash/all_flash.%s.production/%s", device->model, name);
+	// memset(name, '\0', 64);
+	// memset(path, '\0', 255);
+	// snprintf(name, 63, "%s.%s.img3", type, device->model);
+	// snprintf(path, 254, "Firmware/all_flash/all_flash.%s.production/%s", device->model, name);
 
-	debug("Preparing to fetch firmware image from Apple's servers\n");
-	if (fetch_image(path, output) < 0) {
-		error("Unable to fetch firmware image from Apple's servers\n");
-	}
+	// debug("Preparing to fetch firmware image from Apple's servers\n");
+	// if (fetch_image(path, output) < 0) {
+	// 	error("Unable to fetch firmware image from Apple's servers\n");
+	// }
 
-	return 0;
+	// return 0;
 }
 
 int upload_dfu_image(const char* type) {
@@ -119,7 +125,7 @@ int upload_dfu_image(const char* type) {
 	irecv_error_t error = IRECV_E_SUCCESS;
 
 	memset(image, '\0', 255);
-	snprintf(image, 254, "%s.%s", type, device->model);
+	snprintf(image, 254, "%s.%s", type, device->hardware_model);
 
 	debug("Checking if %s already exists\n", image);
 	if (stat(image, &buf) != 0) {
@@ -129,7 +135,14 @@ int upload_dfu_image(const char* type) {
 		}
 	}
 
-	if (client->mode != kDfuMode) {
+	int mode;
+
+	if (irecv_get_mode(client, &mode) != IRECV_E_SUCCESS) {
+		error("Unable to get current mode\n");
+		return -1;
+	}
+
+	if (mode != IRECV_K_DFU_MODE) {
 		debug("Resetting device counters\n");
 		error = irecv_reset_counters(client);
 		if (error != IRECV_E_SUCCESS) {
@@ -153,7 +166,7 @@ int upload_firmware_image(const char* type) {
 	irecv_error_t error = IRECV_E_SUCCESS;
 
 	memset(image, '\0', 255);
-	snprintf(image, 254, "%s.%s", type, device->model);
+	snprintf(image, 254, "%s.%s", type, device->hardware_model);
 
 	debug("Checking if %s already exists\n", image);
 	if (stat(image, &buf) != 0) {
@@ -182,173 +195,175 @@ int upload_firmware_image(const char* type) {
 }
 
 int upload_firmware_payload(const char* type) {
-	int size = 0;
-	const unsigned char* payload = NULL;
-	irecv_error_t error = IRECV_E_SUCCESS;
+	error("Firmware payload uploading not supported\n");
+	return -1;
+	// int size = 0;
+	// const unsigned char* payload = NULL;
+	// irecv_error_t error = IRECV_E_SUCCESS;
 
-	switch (device->index) {
-	case DEVICE_APPLETV2:
-		if (!strcmp(type, "iBSS")) {
-			payload = iBSS_k66ap;
-			size = sizeof(iBSS_k66ap);
-			debug("Loaded payload for iBSS on k66ap\n0");
-		}
-		/*
-		 if(!strcmp(type, "iBEC")) {
-		 payload = iBEC_k66ap;
-		 size = sizeof(iBEC_k66ap);
-		 debug("Loaded payload for iBEC on k66ap\n");
-		 }
-		 */
-		if (!strcmp(type, "iBoot")) {
-			payload = iBoot_k66ap;
-			size = sizeof(iBoot_k66ap);
-			debug("Loaded payload for iBoot on k66ap\n");
-		}
-		break;
+	// switch (device->index) {
+	// case DEVICE_APPLETV2:
+	// 	if (!strcmp(type, "iBSS")) {
+	// 		payload = iBSS_k66ap;
+	// 		size = sizeof(iBSS_k66ap);
+	// 		debug("Loaded payload for iBSS on k66ap\n0");
+	// 	}
+	// 	/*
+	// 	 if(!strcmp(type, "iBEC")) {
+	// 	 payload = iBEC_k66ap;
+	// 	 size = sizeof(iBEC_k66ap);
+	// 	 debug("Loaded payload for iBEC on k66ap\n");
+	// 	 }
+	// 	 */
+	// 	if (!strcmp(type, "iBoot")) {
+	// 		payload = iBoot_k66ap;
+	// 		size = sizeof(iBoot_k66ap);
+	// 		debug("Loaded payload for iBoot on k66ap\n");
+	// 	}
+	// 	break;
 
-	case DEVICE_IPAD1G:
-		if (!strcmp(type, "iBSS")) {
-			payload = iBSS_k48ap;
-			size = sizeof(iBSS_k48ap);
-			debug("Loaded payload for iBSS on k48ap\n0");
-		}
-		/*
-		 if(!strcmp(type, "iBEC")) {
-		 payload = iBEC_k48ap;
-		 size = sizeof(iBEC_k48ap);
-		 debug("Loaded payload for iBEC on k48ap\n");
-		 }
-		 */
-		if (!strcmp(type, "iBoot")) {
-			payload = iBoot_k48ap;
-			size = sizeof(iBoot_k48ap);
-			debug("Loaded payload for iBoot on k48ap\n");
-		}
-		break;
+	// case DEVICE_IPAD1G:
+	// 	if (!strcmp(type, "iBSS")) {
+	// 		payload = iBSS_k48ap;
+	// 		size = sizeof(iBSS_k48ap);
+	// 		debug("Loaded payload for iBSS on k48ap\n0");
+	// 	}
+	// 	/*
+	// 	 if(!strcmp(type, "iBEC")) {
+	// 	 payload = iBEC_k48ap;
+	// 	 size = sizeof(iBEC_k48ap);
+	// 	 debug("Loaded payload for iBEC on k48ap\n");
+	// 	 }
+	// 	 */
+	// 	if (!strcmp(type, "iBoot")) {
+	// 		payload = iBoot_k48ap;
+	// 		size = sizeof(iBoot_k48ap);
+	// 		debug("Loaded payload for iBoot on k48ap\n");
+	// 	}
+	// 	break;
 
-	case DEVICE_IPHONE3GS:
-		if (!strcmp(type, "iBSS")) {
-			payload = iBSS_n88ap;
-			size = sizeof(iBSS_n88ap);
-			debug("Loaded payload for iBSS on n88ap\n");
-		}
-		/*
-		 if(!strcmp(type, "iBEC")) {
-		 payload = iBEC_n88ap;
-		 size = sizeof(iBEC_n88ap);
-		 debug("Loaded payload for iBEC on n88ap\n");
-		 }
-		 */
-		if (!strcmp(type, "iBoot")) {
-			payload = iBoot_n88ap;
-			size = sizeof(iBoot_n88ap);
-			debug("Loaded payload for iBoot on n88ap\n");
-		}
-		break;
+	// case DEVICE_IPHONE3GS:
+	// 	if (!strcmp(type, "iBSS")) {
+	// 		payload = iBSS_n88ap;
+	// 		size = sizeof(iBSS_n88ap);
+	// 		debug("Loaded payload for iBSS on n88ap\n");
+	// 	}
+	// 	/*
+	// 	 if(!strcmp(type, "iBEC")) {
+	// 	 payload = iBEC_n88ap;
+	// 	 size = sizeof(iBEC_n88ap);
+	// 	 debug("Loaded payload for iBEC on n88ap\n");
+	// 	 }
+	// 	 */
+	// 	if (!strcmp(type, "iBoot")) {
+	// 		payload = iBoot_n88ap;
+	// 		size = sizeof(iBoot_n88ap);
+	// 		debug("Loaded payload for iBoot on n88ap\n");
+	// 	}
+	// 	break;
 
-	case DEVICE_IPHONE4:
-		if (!strcmp(type, "iBSS")) {
-			payload = iBSS_n90ap;
-			size = sizeof(iBSS_n90ap);
-			debug("Loaded payload for iBSS on n90ap\n");
-		}
-		/*
-		 if(!strcmp(type, "iBEC")) {
-		 payload = iBEC_n90ap;
-		 size = sizeof(iBEC_n90ap);
-		 debug("Loaded payload for iBEC on n90ap\n");
-		 }
-		 */
-		if (!strcmp(type, "iBoot")) {
-			payload = iBoot_n90ap;
-			size = sizeof(iBoot_n90ap);
-			debug("Loaded payload for iBoot on n90ap\n");
-		}
-		break;
+	// case DEVICE_IPHONE4:
+	// 	if (!strcmp(type, "iBSS")) {
+	// 		payload = iBSS_n90ap;
+	// 		size = sizeof(iBSS_n90ap);
+	// 		debug("Loaded payload for iBSS on n90ap\n");
+	// 	}
+	// 	/*
+	// 	 if(!strcmp(type, "iBEC")) {
+	// 	 payload = iBEC_n90ap;
+	// 	 size = sizeof(iBEC_n90ap);
+	// 	 debug("Loaded payload for iBEC on n90ap\n");
+	// 	 }
+	// 	 */
+	// 	if (!strcmp(type, "iBoot")) {
+	// 		payload = iBoot_n90ap;
+	// 		size = sizeof(iBoot_n90ap);
+	// 		debug("Loaded payload for iBoot on n90ap\n");
+	// 	}
+	// 	break;
 
-	case DEVICE_IPOD2G:
-		if (!strcmp(type, "iBSS")) {
-			payload = iBSS_n72ap;
-			size = sizeof(iBSS_n72ap);
-			debug("Loaded payload for iBSS on n72ap\n");
-		}
-		/*
-		 if(!strcmp(type, "iBEC")) {
-		 payload = iBEC_n72ap;
-		 size = sizeof(iBEC_n72ap);
-		 debug("Loaded payload for iBEC on n72ap\n");
-		 }
-		 */
-		if (!strcmp(type, "iBoot")) {
-			payload = iBoot_n72ap;
-			size = sizeof(iBoot_n72ap);
-			debug("Loaded payload for iBoot on n72ap\n");
-		}
-		break;
+	// case DEVICE_IPOD2G:
+	// 	if (!strcmp(type, "iBSS")) {
+	// 		payload = iBSS_n72ap;
+	// 		size = sizeof(iBSS_n72ap);
+	// 		debug("Loaded payload for iBSS on n72ap\n");
+	// 	}
+	// 	/*
+	// 	 if(!strcmp(type, "iBEC")) {
+	// 	 payload = iBEC_n72ap;
+	// 	 size = sizeof(iBEC_n72ap);
+	// 	 debug("Loaded payload for iBEC on n72ap\n");
+	// 	 }
+	// 	 */
+	// 	if (!strcmp(type, "iBoot")) {
+	// 		payload = iBoot_n72ap;
+	// 		size = sizeof(iBoot_n72ap);
+	// 		debug("Loaded payload for iBoot on n72ap\n");
+	// 	}
+	// 	break;
 
-	case DEVICE_IPOD3G:
-		if (!strcmp(type, "iBSS")) {
-			payload = iBSS_n18ap;
-			size = sizeof(iBSS_n18ap);
-			debug("Loaded payload for iBSS on n18ap\n");
-		}
-		/*
-		 if(!strcmp(type, "iBEC")) {
-		 payload = iBEC_n18ap;
-		 size = sizeof(iBEC_n18ap);
-		 debug("Loaded payload for iBEC on n18ap\n");
-		 }
-		 */
-		if (!strcmp(type, "iBoot")) {
-			payload = iBoot_n18ap;
-			size = sizeof(iBoot_n18ap);
-			debug("Loaded payload for iBoot on n18ap\n");
-		}
-		break;
+	// case DEVICE_IPOD3G:
+	// 	if (!strcmp(type, "iBSS")) {
+	// 		payload = iBSS_n18ap;
+	// 		size = sizeof(iBSS_n18ap);
+	// 		debug("Loaded payload for iBSS on n18ap\n");
+	// 	}
+	// 	/*
+	// 	 if(!strcmp(type, "iBEC")) {
+	// 	 payload = iBEC_n18ap;
+	// 	 size = sizeof(iBEC_n18ap);
+	// 	 debug("Loaded payload for iBEC on n18ap\n");
+	// 	 }
+	// 	 */
+	// 	if (!strcmp(type, "iBoot")) {
+	// 		payload = iBoot_n18ap;
+	// 		size = sizeof(iBoot_n18ap);
+	// 		debug("Loaded payload for iBoot on n18ap\n");
+	// 	}
+	// 	break;
 
-	case DEVICE_IPOD4G:
-		if (!strcmp(type, "iBSS")) {
-			payload = iBSS_n81ap;
-			size = sizeof(iBSS_n81ap);
-			debug("Loaded payload for iBSS on n81ap\n");
-		}
-		/*
-		 if(!strcmp(type, "iBEC")) {
-		 payload = iBEC_n81ap;
-		 size = sizeof(iBEC_n81ap);
-		 debug("Loaded payload for iBEC on n81ap\n");
-		 }
-		 */
-		if (!strcmp(type, "iBoot")) {
-			payload = iBoot_n81ap;
-			size = sizeof(iBoot_n81ap);
-			debug("Loaded payload for iBoot on n81ap\n");
-		}
-		break;
-	}
+	// case DEVICE_IPOD4G:
+	// 	if (!strcmp(type, "iBSS")) {
+	// 		payload = iBSS_n81ap;
+	// 		size = sizeof(iBSS_n81ap);
+	// 		debug("Loaded payload for iBSS on n81ap\n");
+	// 	}
+	// 	/*
+	// 	 if(!strcmp(type, "iBEC")) {
+	// 	 payload = iBEC_n81ap;
+	// 	 size = sizeof(iBEC_n81ap);
+	// 	 debug("Loaded payload for iBEC on n81ap\n");
+	// 	 }
+	// 	 */
+	// 	if (!strcmp(type, "iBoot")) {
+	// 		payload = iBoot_n81ap;
+	// 		size = sizeof(iBoot_n81ap);
+	// 		debug("Loaded payload for iBoot on n81ap\n");
+	// 	}
+	// 	break;
+	// }
 
-	if (payload == NULL) {
-		error("Unable to upload firmware payload\n");
-		return -1;
-	}
+	// if (payload == NULL) {
+	// 	error("Unable to upload firmware payload\n");
+	// 	return -1;
+	// }
 
-	debug("Resetting device counters\n");
-	error = irecv_reset_counters(client);
-	if (error != IRECV_E_SUCCESS) {
-		error("Unable to upload firmware payload\n");
-		debug("%s\n", irecv_strerror(error));
-		return -1;
-	}
+	// debug("Resetting device counters\n");
+	// error = irecv_reset_counters(client);
+	// if (error != IRECV_E_SUCCESS) {
+	// 	error("Unable to upload firmware payload\n");
+	// 	debug("%s\n", irecv_strerror(error));
+	// 	return -1;
+	// }
 
-	debug("Uploading %s payload\n", type);
-	error = irecv_send_buffer(client, (unsigned char*) payload, size, 1);
-	if (error != IRECV_E_SUCCESS) {
-		error("Unable to upload %s payload\n", type);
-		return -1;
-	}
+	// debug("Uploading %s payload\n", type);
+	// error = irecv_send_buffer(client, (unsigned char*) payload, size, 1);
+	// if (error != IRECV_E_SUCCESS) {
+	// 	error("Unable to upload %s payload\n", type);
+	// 	return -1;
+	// }
 
-	return 0;
+	// return 0;
 }
 
 int upload_ibss() {
@@ -391,7 +406,9 @@ int upload_kernelcache() {
 
 	memset(kernelcache, '\0', 255);
 	memset(&buf, '\0', sizeof(buf));
-	snprintf(kernelcache, 254, "kernelcache.release.%c%c%c", device->model[0], device->model[1], device->model[2]);
+	snprintf(kernelcache, 254, "kernelcache.release.%c%c%c", 
+		device->hardware_model[0], device->hardware_model[1], 
+		device->hardware_model[2]);
 	debug("Checking if kernelcache already exists\n");
 	if (stat(kernelcache, &buf) != 0) {
 		if (fetch_image(kernelcache, kernelcache) < 0) {
@@ -480,30 +497,31 @@ int boot_tethered() {
 	debug("Initializing greenpois0n in iBoot\n");
 	irecv_send_command(client, "go");
 
-	// Add an exception for this since it's very different
-	if (device->index == DEVICE_APPLETV2) {
-		debug("Preparing to upload kernelcache\n");
-		if (upload_kernelcache() < 0) {
-			error("Unable to upload kernelcache\n");
-			return -1;
-		}
+	// TODO: fix it
+	// // Add an exception for this since it's very different
+	// if (device->index == DEVICE_APPLETV2) {
+	// 	debug("Preparing to upload kernelcache\n");
+	// 	if (upload_kernelcache() < 0) {
+	// 		error("Unable to upload kernelcache\n");
+	// 		return -1;
+	// 	}
 
-		debug("Hooking jump_to command\n");
-		error = irecv_send_command(client, "go rdboot");
-		if (error != IRECV_E_SUCCESS) {
-			error("Unable to hook jump_to\n");
-			return -1;
-		}
+	// 	debug("Hooking jump_to command\n");
+	// 	error = irecv_send_command(client, "go rdboot");
+	// 	if (error != IRECV_E_SUCCESS) {
+	// 		error("Unable to hook jump_to\n");
+	// 		return -1;
+	// 	}
 
-		debug("Booting kernel\n");
-		error = irecv_send_command(client, "bootx");
-		if (error != IRECV_E_SUCCESS) {
-			error("Unable to boot kernel\n");
-			return -1;
-		}
+	// 	debug("Booting kernel\n");
+	// 	error = irecv_send_command(client, "bootx");
+	// 	if (error != IRECV_E_SUCCESS) {
+	// 		error("Unable to boot kernel\n");
+	// 		return -1;
+	// 	}
 
-		return 0;
-	}
+	// 	return 0;
+	// }
 
 	debug("Preparing to boot iBoot\n");
 	if (boot_iboot() < 0) {
@@ -697,7 +715,7 @@ int pois0n_is_ready() {
 	//////////////////////////////////////
 	// Begin
 	// debug("Connecting to device\n");
-	error = irecv_open(&client);
+	error = irecv_open_with_ecid(&client, 0);
 	if (error != IRECV_E_SUCCESS) {
 		debug("Device must be in DFU mode to continue\n");
 		return -1;
@@ -707,7 +725,14 @@ int pois0n_is_ready() {
 	//////////////////////////////////////
 	// Check device
 	// debug("Checking the device mode\n");
-	if (client->mode != kDfuMode) {
+	int mode;
+
+	if (irecv_get_mode(client, &mode) != IRECV_E_SUCCESS) {
+		error("Unable to get current mode\n");
+		return -1;
+	}
+
+	if (mode != IRECV_K_DFU_MODE) {
 		error("Device must be in DFU mode to continue\n");
 		irecv_close(client);
 		return -1;
@@ -720,20 +745,27 @@ int pois0n_is_compatible() {
 	irecv_error_t error = IRECV_E_SUCCESS;
 	info("Checking if device is compatible with this jailbreak\n");
 
-	debug("Checking the device type\n");
-	error = irecv_get_device(client, &device);
-	if (device == NULL || device->index == DEVICE_UNKNOWN) {
-		error("Sorry device is not compatible with this jailbreak\n");
+	error = irecv_devices_get_device_by_client(client, &device);
+
+	if (error != IRECV_E_SUCCESS) {
+		if (error == IRECV_E_NO_DEVICE) {
+			error("Sorry device is not compatible with this jailbreak\n");
+		} else {
+			error("Unable to get device by client\n");
+		}
+
 		return -1;
 	}
-	info("Identified device as %s\n", device->product);
 
-	if (device->chip_id != 8930
+	info("Identified device as %s\n", device->product_type);
+	info("Device Chip Id: 0x%x\n", device->chip_id);
+
+	if (device->chip_id != 0x8930
 #ifdef LIMERA1N
-			&& device->chip_id != 8922 && device->chip_id != 8920
+			&& device->chip_id != 0x8922 && device->chip_id != 0x8920
 #endif
 #ifdef STEAKS4UCE
-			&& device->chip_id != 8720
+			&& device->chip_id != 0x8720
 #endif
 	) {
 		error("Sorry device is not compatible with this jailbreak\n");
@@ -752,86 +784,67 @@ void pois0n_exit() {
 int pois0n_injectonly() {
 	//////////////////////////////////////
 	// Send exploit
-	if (device->chip_id == 8930) {
-
-#ifdef LIMERA1N
-
+	if (device->chip_id == 0x8930) {
+		
+#ifdef LIMERA1N		
 		debug("Preparing to upload limera1n exploit\n");
 		if (limera1n_exploit() < 0) {
 			error("Unable to upload exploit data\n");
 			return -1;
 		}
-
 #else
-
 		error("Sorry, this device is not currently supported\n");
 		return -1;
-
 #endif
 
-	}
-
-	else if (device->chip_id == 8920 || device->chip_id == 8922) {
+	} else if (device->chip_id == 0x8920 || device->chip_id == 0x8922) {
 
 #ifdef LIMERA1N
-
 		debug("Preparing to upload limera1n exploit\n");
 		if (limera1n_exploit() < 0) {
 			error("Unable to upload exploit data\n");
 			return -1;
 		}
-
 #else
-
 		error("Sorry, this device is not currently supported\n");
 		return -1;
-
 #endif
 
 	}
 
-	else if (device->chip_id == 8720) {
+	else if (device->chip_id == 0x8720) {
 
 #ifdef STEAKS4UCE
-
 		debug("Preparing to upload steaks4uce exploit\n");
 		if (steaks4uce_exploit() < 0) {
 			error("Unable to upload exploit data\n");
 			return -1;
 		}
-
 #else
-
 		error("Sorry, this device is not currently supported\n");
 		return -1;
-
 #endif
 
 	}
 
-	else if (device->chip_id == 8900) {
+	else if (device->chip_id == 0x8900) {
 
 #ifdef PWNAGE2
-
 		debug("Preparing to upload pwnage2 exploit\n");
 		if(pwnage2_exploit() < 0) {
 			error("Unable to upload exploit data\n");
 			return -1;
 		}
-
 #else
-
 		error("Sorry, this device is not currently supported\n");
 		return -1;
-
 #endif
 
-	}
-
-	else {
+	} else {
 		error("Sorry, this device is not currently supported\n");
 		return -1;
 	}
+	
 	return 0;
 }
 
