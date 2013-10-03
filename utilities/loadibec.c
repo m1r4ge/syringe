@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
 
 	printf("Connecting to iDevice...\n");
 
-	error = irecv_open_attempts(&client, 10);
+	error = irecv_open_with_ecid_and_attempts(&client, 0, 10);
 	if(error != IRECV_E_SUCCESS)
 	{
 		fprintf(stderr, "Failed to connect to iBoot, error %d.\n", error);
@@ -105,7 +105,14 @@ int main(int argc, char* argv[])
 			can_ra1n = 1;
 	}
 
-	if(client->mode == kDfuMode && can_ra1n)
+	int mode;
+
+	if (irecv_get_mode(client, &mode) != IRECV_E_SUCCESS) {
+		error("Unable to get current mode\n");
+		return -1;
+	}
+
+	if(mode == IRECV_K_DFU_MODE && can_ra1n)
 	{
 		int ret;
 		printf("linera1n compatible device detected, injecting limera1n.\n");

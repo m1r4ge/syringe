@@ -25,6 +25,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <stdlib.h>
 
 enum {
 	IRECV_K_RECOVERY_MODE_1   = 0x1280,

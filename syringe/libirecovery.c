@@ -24,6 +24,12 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef __APPLE__
+#include <IOKit/IOKitLib.h>
+#include <IOKit/usb/IOUSBLib.h>
+#include <libusb-1.0/os/darwin_usb.h>
+#endif
+
 #ifndef WIN32
 #include <libusb-1.0/libusb.h>
 #define _FMT_qX "%qX"
@@ -463,8 +469,32 @@ void irecv_exit() {
 #endif
 
 int irecv_usb_control_transfer(irecv_client_t client, uint8_t bm_request_type, uint8_t b_request, uint16_t w_value, uint16_t w_index, unsigned char *data, uint16_t w_length, unsigned int timeout) {
-#ifndef WIN32
-	return libusb_control_transfer(client->handle, bm_request_type, b_request, w_value, w_index, data, w_length, timeout);
+#ifdef __APPLE__
+	if (timeout <= 10) {
+		// pod2g: dirty hack for limera1n support.
+		IOReturn kresult;
+		IOUSBDevRequest req;
+		bzero(&req, sizeof(req));
+		//struct darwin_device_handle_priv *priv = (struct darwin_device_handle_priv *)client->handle->os_priv;
+		struct darwin_device_priv *dpriv = (struct darwin_device_priv *)client->handle->dev->os_priv;
+		req.bmRequestType     = bm_request_type;
+		req.bRequest          = b_request;
+		req.wValue            = OSSwapLittleToHostInt16 (w_value);
+		req.wIndex            = OSSwapLittleToHostInt16 (w_index);
+		req.wLength           = OSSwapLittleToHostInt16 (w_length);
+		req.pData             = data + LIBUSB_CONTROL_SETUP_SIZE;
+		kresult = (*(dpriv->device))->DeviceRequestAsync(dpriv->device, &req, (IOAsyncCallback1) dummy_callback, NULL);
+		usleep(5 * 1000);
+		kresult = (*(dpriv->device))->USBDeviceAbortPipeZero (dpriv->device);
+		return kresult == KERN_SUCCESS ? 0 : -1;
+	} else {
+		return libusb_control_transfer(client->handle, bm_request_type, 
+			b_request, w_value, w_index, data, w_length, timeout);		
+	}
+
+#elif !defined(WIN32)
+	return libusb_control_transfer(client->handle, bm_request_type, 
+		b_request, w_value, w_index, data, w_length, timeout);
 #else
 	DWORD count = 0;
 	BOOL bRet;

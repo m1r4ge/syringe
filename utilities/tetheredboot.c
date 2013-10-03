@@ -74,6 +74,7 @@ int main(int argc, char* argv[]) {
 	const char 
 		*ibssFile = NULL,
 		*ibecFile = NULL,
+		*devTreeFile = NULL,
 		*kernelcacheFile = NULL,
 		*ramdiskFile = NULL,
 		*bgcolor = NULL,
@@ -82,7 +83,7 @@ int main(int argc, char* argv[]) {
 
 	opterr = 0;
 
-	while ((c = getopt (argc, argv, "vhs:e:k:r:l:b:")) != -1)
+	while ((c = getopt (argc, argv, "vhs:e:t:k:r:l:b:")) != -1)
 		switch (c)
 	{
 		case 'v':
@@ -104,6 +105,13 @@ int main(int argc, char* argv[]) {
 				return -1;
 			}
 			ibecFile = optarg;
+			break;
+		case 't':
+			if (!file_exists(optarg)) {
+				error("Cannot open DeviceTree file '%s'\n", optarg);
+				return -1;
+			}
+			devTreeFile = optarg;
 			break;
 		case 'k':
 			if (!file_exists(optarg)) {
@@ -176,9 +184,15 @@ int main(int argc, char* argv[]) {
 			debug("%s\n", irecv_strerror(ir_error));
 			return -1;
 		}
+		irecv_send_command(client, "go");
 	}
 
 	client = irecv_reconnect(client, 10);
+//	irecv_reset(client);
+
+	// irecv_set_interface(client, 0, 0);
+	// irecv_set_interface(client, 1, 1);
+
 
 	if (ramdiskFile != NULL) {
 		debug("Uploading %s to device\n", ramdiskFile);
@@ -221,15 +235,32 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (bgcolor != NULL) {
-		char finalbgcolor[255];
-		sprintf(finalbgcolor, "bgcolor %s", bgcolor);
-		ir_error = irecv_send_command(client, finalbgcolor);
-		if(ir_error != IRECV_E_SUCCESS) {
-			error("Unable set bgcolor\n");
+		// char finalbgcolor[255];
+		// sprintf(finalbgcolor, "bgcolor %s", bgcolor);
+		// ir_error = irecv_send_command(client, finalbgcolor);
+		// if(ir_error != IRECV_E_SUCCESS) {
+		// 	error("Unable set bgcolor\n");
+		// 	return -1;
+		// }
+		
+		irecv_send_command(client, "bgcolor 0 0 0");
+		irecv_send_command(client, "bgcolor 192 192 192");
+		client = irecv_reconnect(client, 2);
+
+	}
+
+	if (devTreeFile != NULL) {
+		debug("Uploading %s to device\n", devTreeFile);
+		ir_error = irecv_send_file(client, devTreeFile, 1);
+		if (ir_error != IRECV_E_SUCCESS) {
+			error("Unable to upload devicetree\n");
+			debug("%s\n", irecv_strerror(ir_error));
 			return -1;
 		}
+		irecv_send_command(client, "devicetree");
+		client = irecv_reconnect(client, 5);
 	}
-	
+
 	if (kernelcacheFile != NULL) {
 		debug("Uploading %s to device\n", kernelcacheFile);
 		ir_error = irecv_send_file(client, kernelcacheFile, 1);
